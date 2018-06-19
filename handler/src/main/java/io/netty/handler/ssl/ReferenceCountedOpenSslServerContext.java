@@ -29,7 +29,6 @@ import java.security.cert.X509Certificate;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509ExtendedKeyManager;
 import javax.net.ssl.X509ExtendedTrustManager;
 import javax.net.ssl.X509KeyManager;
 import javax.net.ssl.X509TrustManager;
@@ -107,6 +106,7 @@ public final class ReferenceCountedOpenSslServerContext extends ReferenceCounted
                                            String keyPassword, KeyManagerFactory keyManagerFactory)
             throws SSLException {
         ServerContext result = new ServerContext();
+        OpenSslKeyMaterialProvider keyMaterialProvider = null;
         try {
             SSLContext.setVerify(ctx, SSL.SSL_CVERIFY_NONE, VERIFY_DEPTH);
             if (!OpenSsl.useKeyManagerFactory()) {
@@ -121,14 +121,16 @@ public final class ReferenceCountedOpenSslServerContext extends ReferenceCounted
                 // javadocs state that keyManagerFactory has precedent over keyCertChain, and we must have a
                 // keyManagerFactory for the server so build one if it is not specified.
                 if (keyManagerFactory == null) {
-                    keyManagerFactory = buildKeyManagerFactory(
-                            keyCertChain, key, keyPassword, keyManagerFactory);
+                    keyMaterialProvider = new OpenSslCachingX509KeyManagerFactory(buildKeyManagerFactory(
+                            keyCertChain, key, keyPassword, null), keyPassword).provider();
+                } else if (keyManagerFactory instanceof OpenSslCachingX509KeyManagerFactory) {
+                    keyMaterialProvider = ((OpenSslCachingX509KeyManagerFactory) keyManagerFactory).provider();
+                } else {
+                    X509KeyManager keyManager = chooseX509KeyManager(keyManagerFactory.getKeyManagers());
+                    keyMaterialProvider = new OpenSslKeyMaterialProvider(keyManager, keyPassword);
                 }
-                X509KeyManager keyManager = chooseX509KeyManager(keyManagerFactory.getKeyManagers());
-                result.keyMaterialManager = useExtendedKeyManager(keyManager) ?
-                        new OpenSslExtendedKeyMaterialManager(
-                                (X509ExtendedKeyManager) keyManager, keyPassword) :
-                        new OpenSslKeyMaterialManager(keyManager, keyPassword);
+
+                result.keyMaterialManager = new OpenSslKeyMaterialManager(keyMaterialProvider);
             }
         } catch (Exception e) {
             throw new SSLException("failed to set certificate and key", e);
@@ -185,7 +187,7 @@ public final class ReferenceCountedOpenSslServerContext extends ReferenceCounted
             throw new SSLException("unable to setup trustmanager", e);
         }
 
-        result.sessionContext = new OpenSslServerSessionContext(thiz);
+        result.sessionContext = new OpenSslServerSessionContext(thiz, keyMaterialProvider);
         result.sessionContext.setSessionIdContext(ID);
         return result;
     }

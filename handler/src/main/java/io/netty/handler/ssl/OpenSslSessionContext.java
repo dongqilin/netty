@@ -35,13 +35,15 @@ public abstract class OpenSslSessionContext implements SSLSessionContext {
 
     private final OpenSslSessionStats stats;
     final ReferenceCountedOpenSslContext context;
+    final OpenSslKeyMaterialProvider provider;
 
     // IMPORTANT: We take the OpenSslContext and not just the long (which points the native instance) to prevent
     //            the GC to collect OpenSslContext as this would also free the pointer and so could result in a
     //            segfault when the user calls any of the methods here that try to pass the pointer down to the native
     //            level.
-    OpenSslSessionContext(ReferenceCountedOpenSslContext context) {
+    OpenSslSessionContext(ReferenceCountedOpenSslContext context, OpenSslKeyMaterialProvider provider) {
         this.context = context;
+        this.provider = provider;
         stats = new OpenSslSessionStats(context);
     }
 
