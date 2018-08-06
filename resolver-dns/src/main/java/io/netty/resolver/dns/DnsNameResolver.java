@@ -131,7 +131,7 @@ public class DnsNameResolver extends InetNameResolver {
 
             @SuppressWarnings("unchecked")
             List<String> list = (List<String>) nameservers.invoke(instance);
-            searchDomains = list.toArray(new String[list.size()]);
+            searchDomains = list.toArray(new String[0]);
         } catch (Exception ignore) {
             // Failed to get the system name search domain list.
             searchDomains = EmptyArrays.EMPTY_STRINGS;
@@ -219,7 +219,7 @@ public class DnsNameResolver extends InetNameResolver {
             EventLoop eventLoop,
             ChannelFactory<? extends DatagramChannel> channelFactory,
             final DnsCache resolveCache,
-            DnsCache authoritativeDnsServerCache,
+            final DnsCache authoritativeDnsServerCache,
             DnsQueryLifecycleObserverFactory dnsQueryLifecycleObserverFactory,
             long queryTimeoutMillis,
             ResolvedAddressTypes resolvedAddressTypes,
@@ -306,8 +306,9 @@ public class DnsNameResolver extends InetNameResolver {
 
         ch.closeFuture().addListener(new ChannelFutureListener() {
             @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
+            public void operationComplete(ChannelFuture future) {
                 resolveCache.clear();
+                authoritativeDnsServerCache.clear();
             }
         });
     }

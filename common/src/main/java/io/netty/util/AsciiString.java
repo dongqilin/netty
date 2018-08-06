@@ -722,7 +722,7 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
         }
 
         final byte chAsByte = c2b0(ch);
-        final int len = offset + start + length;
+        final int len = offset + length;
         for (int i = start + offset; i < len; ++i) {
             if (value[i] == chAsByte) {
                 return i - offset;
@@ -1115,7 +1115,7 @@ public final class AsciiString implements CharSequence, Comparable<CharSequence>
             }
         }
 
-        return res.toArray(new AsciiString[res.size()]);
+        return res.toArray(new AsciiString[0]);
     }
 
     /**

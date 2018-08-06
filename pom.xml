@@ -26,7 +26,7 @@
   <groupId>io.netty</groupId>
   <artifactId>netty-parent</artifactId>
   <packaging>pom</packaging>
-  <version>4.1.26.Final-SNAPSHOT</version>
+  <version>4.1.29.Final-SNAPSHOT</version>
 
   <name>Netty</name>
   <url>http://netty.io/</url>
@@ -221,7 +221,7 @@
     <!-- Fedora-"like" systems. This is currently only used for the netty-tcnative dependency -->
     <os.detection.classifierWithLikes>fedora</os.detection.classifierWithLikes>
     <tcnative.artifactId>netty-tcnative</tcnative.artifactId>
-    <tcnative.version>2.0.10.Final</tcnative.version>
+    <tcnative.version>2.0.12.Final</tcnative.version>
     <tcnative.classifier>${os.detected.classifier}</tcnative.classifier>
     <conscrypt.groupId>org.conscrypt</conscrypt.groupId>
     <conscrypt.artifactId>conscrypt-openjdk-uber</conscrypt.artifactId>
@@ -273,6 +273,7 @@
     <module>testsuite-autobahn</module>
     <module>testsuite-http2</module>
     <module>testsuite-osgi</module>
+    <module>testsuite-shading</module>
     <module>microbench</module>
     <module>bom</module>
   </modules>
@@ -701,6 +702,8 @@
             <ignore>java.nio.channels.SocketChannel</ignore>
             <ignore>java.net.StandardProtocolFamily</ignore>
             <ignore>java.nio.channels.spi.SelectorProvider</ignore>
+            <ignore>java.net.SocketOption</ignore> 
+            <ignore>java.nio.channels.NetworkChannel</ignore>
 
             <!-- Self-signed certificate generation -->
             <ignore>sun.security.x509.AlgorithmId</ignore>
